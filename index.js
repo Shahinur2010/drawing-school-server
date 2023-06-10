@@ -26,7 +26,13 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
+    const informationCollection = client.db("drawingSchoolDB").collection("informations");
     const usersCollection = client.db("drawingSchoolDB").collection("users");
+
+    app.get("/informations", async (req, res) => {
+      const result = await informationCollection.find().toArray();
+      res.send(result);
+    });
 
     app.get("/users", async (req, res) => {
         const result = await usersCollection.find().toArray();
@@ -64,3 +70,29 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Summer school is running on port: ${port}`)
 })
+
+
+// // Assuming 'data' is the array containing the JSON data
+
+// // Step 1: Parse JSON data
+// const classes = JSON.parse(data);
+
+// // Step 2: Sort the array based on numberOfStudents in descending order
+// classes.sort((a, b) => b.numberOfStudents - a.numberOfStudents);
+
+// // Step 3: Get the first 6 classes with the largest number of students
+// const sixLargestClasses = classes.slice(0, 6);
+
+// console.log(sixLargestClasses);
+
+
+
+// for (let i = 0; i < imageLinksArray.length; i++) {
+//   const imageUrl = imageLinksArray[i];
+  
+//   await collection.updateOne(
+//     {},
+//     { $set: { imageUrl } }
+//   );
+  
+//   console.log(`Updated document ${i + 1} with imageUrl: ${imageUrl}`);
