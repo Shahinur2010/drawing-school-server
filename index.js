@@ -30,6 +30,11 @@ async function run() {
       .collection("informations");
     const usersCollection = client.db("drawingSchoolDB").collection("users");
 
+    app.get("/datas", async(req, res) => {
+      const result = await informationCollection.find().toArray();
+      res.send(result)
+    })
+
     app.get("/informations", async (req, res) => {
       const result = await informationCollection
         .find()
@@ -38,6 +43,13 @@ async function run() {
         .toArray();
       res.send(result);
     });
+
+    app.post('/informations', async(req, res)=> {
+      const item = req.body;
+      console.log(item)
+      const result = await informationCollection.insertOne(item);
+      res.send(result)
+    })
 
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
@@ -51,9 +63,18 @@ async function run() {
       if (existingUser) {
         return res.send({ message: "user already exists" });
       }
-      const result = await usersCollection.insertOne(user);
+      const result = await usersCollection.insertOne({...user, role: "student"});
       res.send(result);
     });
+
+    app.post("/addclass", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const result = await informationCollection.insertOne({user});
+      res.send(result);
+    });
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
