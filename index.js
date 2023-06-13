@@ -25,32 +25,10 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
-    const informationCollection = client
-      .db("drawingSchoolDB")
-      .collection("informations");
+    const classCollection = client.db("drawingSchoolDB").collection("classes");
     const usersCollection = client.db("drawingSchoolDB").collection("users");
 
-    app.get("/datas", async(req, res) => {
-      const result = await informationCollection.find().toArray();
-      res.send(result)
-    })
-
-    app.get("/informations", async (req, res) => {
-      const result = await informationCollection
-        .find()
-        .sort({ numberOfStudents: -1 })
-        .limit(6)
-        .toArray();
-      res.send(result);
-    });
-
-    app.post('/informations', async(req, res)=> {
-      const item = req.body;
-      console.log(item)
-      const result = await informationCollection.insertOne(item);
-      res.send(result)
-    })
-
+    
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
@@ -66,14 +44,44 @@ async function run() {
       const result = await usersCollection.insertOne({...user, role: "student"});
       res.send(result);
     });
+    
+    app.get("/datas", async(req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result)
+    })
+
+    app.get("/classes", async (req, res) => {
+      const result = await classCollection
+        .find()
+        .sort({ numberOfStudents: -1 })
+        .limit(6)
+        .toArray();
+      res.send(result);
+    });
+
+    app.post('/classes', async(req, res)=> {
+      const item = req.body;
+      console.log(item)
+      const result = await classCollection.insertOne(item);
+      res.send(result)
+    })
 
     app.post("/addclass", async (req, res) => {
       const user = req.body;
       console.log(user);
-      const result = await informationCollection.insertOne({user});
+      const result = await classCollection.insertOne(user);
       res.send(result);
     });
 
+    app.get("/allclass", async (req, res) => {
+      console.log(req.query.instructorEmail);
+      let query = {};
+      if (req.query?.instructorEmail) {
+        query = { instructorEmail: req.query.instructorEmail };
+      }
+      const result = await classCollection.find(query).toArray();
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
