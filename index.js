@@ -8,7 +8,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 // const uri = "mongodb+srv://<username>:<password>@cluster0.x4tlawd.mongodb.net/?retryWrites=true&w=majority";
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.x4tlawd.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -28,7 +28,6 @@ async function run() {
     const classCollection = client.db("drawingSchoolDB").collection("classes");
     const usersCollection = client.db("drawingSchoolDB").collection("users");
 
-    
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
@@ -44,11 +43,35 @@ async function run() {
       const result = await usersCollection.insertOne({...user, role: "student"});
       res.send(result);
     });
-    
-    app.get("/datas", async(req, res) => {
-      const result = await classCollection.find().toArray();
+
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updateDoc = {
+        $set:{
+          role: 'admin'
+        }
+      }
+      const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result)
-    })
+    });
+
+    app.patch("/users/instructor/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updateDoc = {
+        $set:{
+          role: 'instructor'
+        }
+      }
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result)
+    });
+
+    app.get("/datas", async (req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result);
+    });
 
     app.get("/classes", async (req, res) => {
       const result = await classCollection
@@ -59,12 +82,12 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/classes', async(req, res)=> {
+    app.post("/classes", async (req, res) => {
       const item = req.body;
-      console.log(item)
+      console.log(item);
       const result = await classCollection.insertOne(item);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     app.post("/addclass", async (req, res) => {
       const user = req.body;
@@ -82,7 +105,6 @@ async function run() {
       const result = await classCollection.find(query).toArray();
       res.send(result);
     });
-
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
