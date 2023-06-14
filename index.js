@@ -28,6 +28,7 @@ async function run() {
     const classCollection = client.db("drawingSchoolDB").collection("classes");
     const usersCollection = client.db("drawingSchoolDB").collection("users");
 
+    // api for users
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
@@ -68,6 +69,8 @@ async function run() {
       res.send(result)
     });
 
+
+    // api for classes
     app.get("/datas", async (req, res) => {
       const result = await classCollection.find().toArray();
       res.send(result);
@@ -105,6 +108,31 @@ async function run() {
       const result = await classCollection.find(query).toArray();
       res.send(result);
     });
+
+    app.patch("/classes/approved/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updateDoc = {
+        $set:{
+          status: 'approved'
+        }
+      }
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result)
+    });
+
+    app.patch("/classes/denied/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updateDoc = {
+        $set:{
+          status: 'denied'
+        }
+      }
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result)
+    });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
