@@ -170,9 +170,10 @@ async function run() {
     app.post("/addclass", async (req, res) => {
       const user = req.body;
       console.log(user);
-      if(user && role === 'instructor'){
+      // if(user && role === 'instructor'){
       const result = await classCollection.insertOne(user);
-      res.send(result)}
+      res.send(result)
+    // }
     });
 
     app.patch("/classes/approved/:id", async (req, res) => {
