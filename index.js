@@ -48,6 +48,7 @@ async function run() {
     // await client.connect();
     const classCollection = client.db("drawingSchoolDB").collection("classes");
     const usersCollection = client.db("drawingSchoolDB").collection("users");
+    const selectedClassCollection = client.db("drawingSchoolDB").collection("selectedClasses");
 
   app.post('/jwt', (req, res)=>{
     const user = req.body;
@@ -152,22 +153,11 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/addclass", async (req, res) => {
-      const user = req.body;
-      console.log(user);
-      if(user && role === 'instructor'){
-      const result = await classCollection.insertOne(user);
-      res.send(result)}
-    });
-
     app.get("/allclass", verifyJWT, async (req, res) => {
       const email = req.query.email;
       console.log(req.query.email);
 
       const decodedEmail = req.decoded.email;
-      // if(email !== decodedEmail){
-      //   return res.status(401).send({error: true, message: 'forbidden access'})
-      // }
       
       let query = {};
       if (req.query?.email) {
@@ -175,6 +165,14 @@ async function run() {
       }
       const result = await classCollection.find(query).toArray();
       res.send(result);
+    });
+
+    app.post("/addclass", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      if(user && role === 'instructor'){
+      const result = await classCollection.insertOne(user);
+      res.send(result)}
     });
 
     app.patch("/classes/approved/:id", async (req, res) => {
@@ -199,6 +197,28 @@ async function run() {
       }
       const result = await classCollection.updateOne(filter, updateDoc);
       res.send(result)
+    });
+
+    // api for selectedClass
+
+    app.get("/selectedclass", async(req, res)=>{
+      const result = await selectedClassCollection.find().toArray();
+      res.send(result);
+    })
+
+
+    app.post("/selectedclass", async(req, res)=>{
+      const item = req.body;
+      console.log(item);
+      const result = await selectedClassCollection.insertOne(item);
+      res.send(result)
+    })
+
+    app.delete("/selectedclass/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await selectedClassCollection.deleteOne(query);
+      res.send(result);
     });
 
 
