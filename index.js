@@ -1,8 +1,10 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require ('jsonwebtoken');
 require("dotenv").config();
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -29,7 +31,6 @@ jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
 }
 
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 // const uri = "mongodb+srv://<username>:<password>@cluster0.x4tlawd.mongodb.net/?retryWrites=true&w=majority";
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.x4tlawd.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -49,6 +50,7 @@ async function run() {
     const classCollection = client.db("drawingSchoolDB").collection("classes");
     const usersCollection = client.db("drawingSchoolDB").collection("users");
     const selectedClassCollection = client.db("drawingSchoolDB").collection("selectedClasses");
+    const paymentCollection = client.db("drawingSchoolDB").collection("payments");
 
   app.post('/jwt', (req, res)=>{
     const user = req.body;
@@ -221,6 +223,29 @@ async function run() {
       const result = await selectedClassCollection.deleteOne(query);
       res.send(result);
     });
+
+    // create payment intent
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+    
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+    
+    // payment related api
+    app.post("/payments", verifyJWT, async (req, res) => {
+      const payment = req.body;
+      const result = await paymentCollection.insertOne(payment);
+      res.send(result);
+    });
+    
 
 
     // Send a ping to confirm a successful connection
