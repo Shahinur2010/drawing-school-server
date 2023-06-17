@@ -242,7 +242,7 @@ async function run() {
     
     // payment related api
     app.get("/payments", async(req, res)=>{
-      const result = await paymentCollection.find().toArray();
+      const result = await paymentCollection.find().sort({date: -1}).toArray();
       res.send(result);
     })
 
@@ -272,13 +272,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Summer school is running on port: ${port}`);
 });
-
-// for (let i = 0; i < imageLinksArray.length; i++) {
-//   const imageUrl = imageLinksArray[i];
-
-//   await collection.updateOne(
-//     {},
-//     { $set: { imageUrl } }
-//   );
-
-//   console.log(`Updated document ${i + 1} with imageUrl: ${imageUrl}`);
